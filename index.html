@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>モンチ図鑑</title>
+
+  <!-- 귀여운 일본어 글꼴 (구글 폰트: M PLUS Rounded 1c) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== 색 설정: 여기만 바꾸면 전체 분위기가 바뀌어요 ===== */
+    :root {
+      --red: #b30d12;       /* 땡땡이 빨강 */
+      --cream: #fdf4ee;     /* 크림색 */
+      --brown: #6b4226;     /* 몬치 털 갈색 */
+      --pink: #f7c5c0;      /* 볼터치 분홍 */
+      --text: #4a3326;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ----- 배경: 빨간 땡땡이 사진을 바둑판처럼 반복 ----- */
+    body {
+      font-family: "M PLUS Rounded 1c", sans-serif;
+      font-weight: 500;
+      font-size: 1.05rem;
+      color: var(--text);
+      line-height: 1.6;
+      letter-spacing: -0.03em;   /* 자간 살짝 좁게 (더 좁히려면 -0.05em) */
+      background-color: var(--cream);
+      background-image: url("bg.jpg");
+      background-repeat: repeat;
+      background-size: 368px auto;
+      background-attachment: fixed;
+    }
+
+    /* 제목·버튼은 굵게 (800), 본문은 보통 (500) */
+    h1, h2, h3, .no, .tag, .btn, .count, nav a, .label { font-weight: 800; }
+
+    /* ----- 상단 메뉴 ----- */
+    nav {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--red);
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 26px;
+      padding: 12px;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.15);
+    }
+    nav a { color: white; text-decoration: none; font-size: 1.1rem; }
+    nav a:hover { color: var(--pink); }
+
+    /* ----- 흰 상자 (땡땡이 위에 내용 올리기) ----- */
+    .box {
+      max-width: 920px;
+      margin: 40px auto;
+      padding: 36px 28px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 4px solid var(--red);
+      border-radius: 32px;
+      box-shadow: 0 8px 0 var(--red);
+    }
+    @media (max-width: 960px) { .box { margin: 30px 14px; } }
+
+    h2 {
+      font-size: 2rem;
+      color: var(--red);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .sub { text-align: center; color: #9a7764; margin-bottom: 28px; }
+
+    /* ----- 첫 화면 ----- */
+    header.box { text-align: center; margin-top: 50px; }
+    header .hero-img {
+      width: min(380px, 90%);
+      display: block; margin: 0 auto 10px;
+      animation: bounce 2.5s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    header h1 {
+      font-size: clamp(3rem, 10vw, 4.5rem);
+      color: var(--red);
+      letter-spacing: 4px;
+      text-shadow: 3px 3px 0 var(--pink);
+    }
+    header p { font-size: 1.4rem; }
+    .count {
+      display: inline-block;
+      margin-top: 16px;
+      background: var(--red); color: white;
+      padding: 6px 22px; border-radius: 999px;
+      font-family: "M PLUS Rounded 1c", sans-serif;
+    }
+
+    /* ----- 도감 카드 (한 마리 = 카드 하나) ----- */
+    .dex { display: grid; gap: 26px; }
+    .entry {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 22px;
+      align-items: center;
+      background: white;
+      border: 3px solid var(--pink);
+      border-radius: 26px;
+      padding: 20px;
+      transition: transform .2s, border-color .2s;
+    }
+    .entry:hover { transform: rotate(-1deg) scale(1.01); border-color: var(--red); }
+    @media (max-width: 640px) { .entry { grid-template-columns: 1fr; } }
+
+    .entry img {
+      width: 100%; height: 260px;
+      object-fit: contain;
+      background: var(--cream);
+      border-radius: 20px;
+    }
+    .no {
+      display: inline-block;
+      background: var(--red); color: white;
+      padding: 2px 14px; border-radius: 999px;
+      font-size: .95rem;
+    }
+    .entry h3 { font-size: 1.8rem; color: var(--brown); margin: 6px 0 12px; }
+    .row { margin: 4px 0; }
+    .label { color: var(--red); margin-right: 6px; }
+    .memo {
+      margin-top: 12px;
+      background: var(--cream);
+      border-radius: 14px;
+      padding: 10px 14px;
+    }
+
+    /* 아직 안 데려온 빈 칸 */
+    .entry.empty { border-style: dashed; opacity: .75; }
+    .entry.empty .photo-empty {
+      height: 260px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--cream); border-radius: 20px;
+      font-family: "M PLUS Rounded 1c", sans-serif; font-size: 4rem; color: var(--pink);
+    }
+
+    /* ----- ＋ 추가 버튼 & 등록 창 ----- */
+    #addBtn { cursor: pointer; }
+    #addBtn:hover .photo-empty { color: var(--red); }
+    .add-form {
+      margin-top: 22px;
+      display: grid; gap: 12px;
+      background: var(--cream);
+      border: 3px dashed var(--red);
+      border-radius: 24px;
+      padding: 22px;
+    }
+    .add-form[hidden] { display: none; }
+    .add-form h3 { color: var(--red); text-align: center; font-size: 1.5rem; }
+    .add-form label { display: grid; gap: 4px; color: var(--red); }
+    .add-form input, .add-form textarea {
+      font-family: inherit; font-size: 1rem; color: var(--text);
+      padding: 8px 12px;
+      border: 2px solid var(--pink); border-radius: 12px;
+      background: white;
+    }
+    .form-btns { display: flex; gap: 10px; justify-content: center; }
+    button.btn { border: none; cursor: pointer; font-size: 1rem; }
+    .btn.ghost { background: white; color: var(--red); box-shadow: 0 4px 0 var(--pink); }
+
+    /* 추가한 카드 아래 작은 버튼들 */
+    .card-tools { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .mini {
+      font-family: "M PLUS Rounded 1c", sans-serif; font-size: .85rem;
+      background: white; color: var(--brown);
+      border: 2px solid var(--pink); border-radius: 999px;
+      padding: 2px 12px; cursor: pointer;
+    }
+    .mini:hover { border-color: var(--red); color: var(--red); }
+
+    /* ----- 몬치치 스티커 (상자 모서리에 붙어 있는 장식) ----- */
+    html { overflow-x: clip; }
+    .box { position: relative; }
+    .sticker {
+      position: absolute; z-index: 3;
+      width: 130px;
+      background-size: contain; background-repeat: no-repeat; background-position: center;
+      pointer-events: none;
+      filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.25));
+      transform: rotate(var(--r, 0deg)) scaleX(var(--flip, 1));
+      animation: wiggle 3.5s ease-in-out infinite;
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(var(--r, 0deg)) scaleX(var(--flip, 1)); }
+      50% { transform: rotate(calc(var(--r, 0deg) + 5deg)) scaleX(var(--flip, 1)); }
+    }
+    .sticker.pair   { aspect-ratio: 360 / 327; width: 150px;
+      background-image: url("sticker-pair.png"); }
+    .sticker.ribbon { aspect-ratio: 260 / 512; width: 95px;
+      background-image: url("sticker-ribbon.png"); }
+    /* 붙이는 위치: tl=왼쪽위, tr=오른쪽위, bl=왼쪽아래, br=오른쪽아래 */
+    .tl { top: -50px;    left: -14px; }
+    .tr { top: -50px;    right: -14px; }
+    .bl { bottom: -40px; left: -14px; }
+    .br { bottom: -40px; right: -14px; }
+    @media (max-width: 640px) {
+      .sticker.pair { width: 100px; }
+      .sticker.ribbon { width: 64px; }
+      .tl, .tr { top: -36px; } .tl { left: -14px; } .tr { right: -14px; }
+      .bl, .br { bottom: -30px; } .bl { left: -12px; } .br { right: -12px; }
+    }
+
+    /* ----- 위시리스트 ----- */
+    .wish { list-style: none; display: grid; gap: 12px; }
+    .wish li {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      background: white;
+      border: 2px dashed var(--pink);
+      border-radius: 18px;
+      padding: 12px 18px;
+    }
+    .wish li::before { content: "♡"; color: var(--red); margin-right: 10px; font-size: 1.4rem; }
+    .wish .name { flex: 1; }
+    .tag {
+      font-family: "M PLUS Rounded 1c", sans-serif; font-size: .9rem;
+      padding: 2px 12px; border-radius: 999px;
+      background: var(--pink); color: var(--brown);
+      white-space: nowrap;
+    }
+    .wish-form { display: flex; gap: 10px; margin-bottom: 16px; }
+    .wish-form input {
+      flex: 1; min-width: 0;
+      font-family: inherit; font-size: 1rem; color: var(--text);
+      padding: 10px 14px;
+      border: 2px solid var(--pink); border-radius: 999px;
+      background: white;
+    }
+    .wish-form input:focus, .add-form input:focus, .add-form textarea:focus { outline: none; border-color: var(--red); }
+    button.tag { border: none; cursor: pointer; }
+    .del {
+      border: none; background: none; cursor: pointer;
+      color: #c9a9a0; font-size: 1.2rem; padding: 0 4px;
+    }
+    .del:hover { color: var(--red); }
+    .wish li.got { opacity: .55; }
+    .wish li.got::before { content: "♥"; }
+    .wish li.got .name { text-decoration: line-through; }
+    .wish li.got .tag { background: var(--red); color: white; }
+
+    /* ----- 구매처 ----- */
+    .shops {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .shop {
+      background: white;
+      border: 3px solid var(--pink);
+      border-radius: 22px;
+      padding: 20px;
+      text-align: center;
+    }
+    .shop h3 { color: var(--brown); font-size: 1.4rem; }
+    .shop p { font-size: 1.1rem; color: #9a7764; margin: 6px 0 14px; }
+    .btn {
+      display: inline-block;
+      background: var(--red); color: white;
+      text-decoration: none;
+      padding: 8px 22px; border-radius: 999px;
+      box-shadow: 0 4px 0 #7a080b;
+      transition: transform .1s, box-shadow .1s;
+    }
+    .btn:hover { transform: translateY(2px); box-shadow: 0 2px 0 #7a080b; }
+
+    footer {
+      text-align: center;
+      margin: 40px auto 60px;
+      padding: 14px 24px;
+      max-width: 420px;
+      background: white;
+      border: 3px solid var(--red);
+      border-radius: 999px;
+      font-size: 1.05rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 메뉴 -->
+  <nav>
+    <a href="#dex">📖 図鑑</a>
+    <a href="#wish">♡ ほしいものリスト</a>
+    <a href="#shop">🛒 お店</a>
+  </nav>
+
+  <!-- 첫 화면 -->
+  <header class="box">
+    <div class="sticker ribbon tl" style="--r:-14deg"></div>
+    <img class="hero-img" src="main.jpg" alt="モンチッチ2匹">
+    <h1>モンチ図鑑</h1>
+    <p>お迎えするたびに記録する、うちのモンチたち</p>
+    <span class="count" id="count">まだモンチがいません</span>
+  </header>
+
+  <!-- ============ 도감 ============ -->
+  <section id="dex" class="box">
+    <div class="sticker pair tr" style="--r:9deg"></div>
+    <h2>📖 モンチ図鑑</h2>
+    <p class="sub">うちに来た順番に記録します</p>
+    <div style="text-align:center; margin-bottom:24px">
+      <button type="button" class="btn" id="addTop">＋ 新しいモンチを登録</button>
+    </div>
+
+    <div class="dex">
+
+      <!-- 📋 GitHub용 코드로 복사한 몬치 카드는 여기(＋ 카드 바로 위)에 붙여넣어요 -->
+
+      <!-- ＋ 추가 버튼 (누르면 다음 번호 몬치 등록 창이 열려요) -->
+      <div class="entry empty" id="addBtn" role="button" tabindex="0">
+        <div class="photo-empty">＋</div>
+        <div>
+          <span class="no" id="nextNo">No.001</span>
+          <h3 id="nextName">1匹目のモンチ</h3>
+          <div class="row">タップして新しいモンチをお迎え 🎀</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 새 몬치 등록 창 (처음엔 숨겨져 있음) -->
+    <form id="addForm" class="add-form" hidden>
+      <h3 id="formTitle">1匹目のモンチを登録</h3>
+      <label>📷 写真 <input type="file" accept="image/*" id="fPhoto"></label>
+      <label>🏠 お迎え日 <input type="date" id="fDate" required></label>
+      <label>🛍️ 購入したお店 <input type="text" id="fShop" placeholder="公式ショップ"></label>
+      <label>📝 メモ <textarea id="fMemo" rows="3" placeholder="お迎えした理由、第一印象など"></textarea></label>
+      <div class="form-btns">
+        <button type="submit" class="btn">登録する</button>
+        <button type="button" class="btn ghost" id="cancelBtn">キャンセル</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ============ 위시리스트 ============ -->
+  <section id="wish" class="box">
+    <div class="sticker ribbon bl" style="--r:-10deg; --flip:-1"></div>
+    <h2>♡ ほしいものリスト</h2>
+    <p class="sub">いつか必ずお迎えしたいモンチたち</p>
+
+    <!-- 여기에 적고 ＋ 추가를 누르면 목록에 들어가요 -->
+    <form class="wish-form" id="wishForm">
+      <input id="wishInput" maxlength="40" placeholder="ほしいモンチの名前を書いてね">
+      <button type="submit" class="btn">＋ 追加</button>
+    </form>
+    <p class="sub" id="wishEmpty">まだ何も書いていません</p>
+    <ul class="wish" id="wishList"></ul>
+  </section>
+
+  <!-- ============ 구매처 ============ -->
+  <section id="shop" class="box">
+    <div class="sticker pair br" style="--r:-8deg; --flip:-1"></div>
+    <h2>🛒 よく行くお店</h2>
+    <p class="sub">モンチをお迎えするお店まとめ</p>
+
+    <div class="shops">
+      <div class="shop">
+        <h3>huwa 公式ストア</h3>
+        <p>NAVER スマートストア</p>
+        <a class="btn" href="https://smartstore.naver.com/huwa_official" target="_blank">見に行く →</a>
+      </div>
+      <div class="shop">
+        <h3>キッチンモール</h3>
+        <p>NAVER スマートストア</p>
+        <a class="btn" href="https://smartstore.naver.com/kitchenmall" target="_blank">見に行く →</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    🎀 モンチ図鑑 · 小さなモンチッチたちとのコレクション記録
+  </footer>
+
+  <!-- ============ ＋ 추가 기능 (자바스크립트) ============ -->
+  <script>
+    const KEY = 'monchizukan-jp-v1';   // 이 브라우저에 저장할 때 쓰는 이름
+    const dex = document.querySelector('.dex');
+    const addBtn = document.getElementById('addBtn');
+    const form = document.getElementById('addForm');
+    const $ = id => document.getElementById(id);
+
+    // 1 → 1匹目, 2 → 2匹目 ...
+    function ord(n) { return n + '匹目'; }
+    const pad = n => String(n).padStart(3, '0');
+    const fmtDate = d => d ? d.replaceAll('-', '.') : '-';
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    function load() {
+      try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; }
+    }
+    function save(list) {
+      try { localStorage.setItem(KEY, JSON.stringify(list)); return true; }
+      catch (e) { alert('保存容量がいっぱいです。何匹かをGitHub用コードに移してから削除してください。'); return false; }
+    }
+
+    // HTML에 직접 적어 둔 몬치 수 (GitHub용 코드로 붙여넣은 카드 수를 자동으로 세요)
+    const fixedCount = dex.querySelectorAll('.entry:not(.empty)').length;
+
+    // 추가한 몬치 카드 만들기
+    function makeCard(m, n, idx) {
+      const card = document.createElement('div');
+      card.className = 'entry added';
+      card.innerHTML = `
+        ${m.photo ? `<img src="${m.photo}" alt="">` : `<div class="photo-empty">🎀</div>`}
+        <div>
+          <span class="no">No.${pad(n)}</span>
+          <h3>${ord(n)}のモンチ</h3>
+          <div class="row"><span class="label">🏠 お迎え日</span>${esc(fmtDate(m.date))}</div>
+          <div class="row"><span class="label">🛍️ 購入したお店</span>${esc(m.shop || '-')}</div>
+          <div class="memo">📝 メモ: ${esc(m.memo || '')}</div>
+          <div class="card-tools">
+            <button class="mini" data-act="code">📋 GitHub用コードをコピー</button>
+            <button class="mini" data-act="del">🗑️ 削除</button>
+          </div>
+        </div>`;
+      card.querySelector('[data-act="del"]').onclick = () => {
+        if (!confirm(`${ord(n)}のモンチを削除しますか？`)) return;
+        const list = load(); list.splice(idx, 1); save(list); render();
+      };
+      card.querySelector('[data-act="code"]').onclick = () => copyCode(m, n);
+      return card;
+    }
+
+    // 화면 다시 그리기 + 번호/마리 수 자동 계산
+    function render() {
+      dex.querySelectorAll('.added').forEach(e => e.remove());
+      const list = load();
+      list.forEach((m, i) => dex.insertBefore(makeCard(m, fixedCount + i + 1, i), addBtn));
+      const next = fixedCount + list.length + 1;
+      $('nextNo').textContent = 'No.' + pad(next);
+      $('nextName').textContent = ord(next) + 'のモンチ';
+      $('formTitle').textContent = ord(next) + 'のモンチを登録';
+      $('count').textContent = next - 1 > 0 ? '現在のモンチ: ' + (next - 1) + '匹' : 'まだモンチがいません';
+    }
+
+    // ＋ 버튼 → 등록 창 열기
+    function openForm() {
+      form.hidden = false;
+      const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      $('fDate').value = d.toISOString().slice(0, 10);
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    addBtn.onclick = openForm;
+    $('addTop').onclick = openForm;
+    addBtn.onkeydown = e => { if (e.key === 'Enter') openForm(); };
+    $('cancelBtn').onclick = () => { form.reset(); form.hidden = true; };
+
+    // 사진을 작게 줄여서 저장 (저장 공간 아끼기)
+    function shrink(file) {
+      return new Promise(resolve => {
+        if (!file) return resolve('');
+        const img = new Image();
+        img.onload = () => {
+          const s = Math.min(1, 600 / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width = img.width * s; c.height = img.height * s;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+          ctx.drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = () => resolve('');
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    // 등록하기
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const m = {
+        photo: await shrink($('fPhoto').files[0]),
+        date: $('fDate').value,
+        shop: $('fShop').value.trim(),
+        memo: $('fMemo').value.trim()
+      };
+      const list = load(); list.push(m);
+      if (!save(list)) return;
+      form.reset(); form.hidden = true;
+      render();
+    };
+
+    // GitHub에 영구 저장할 때 붙여넣을 코드 복사
+    function copyCode(m, n) {
+      const code =
+`      <div class="entry">
+        <img src="monchi${n}.jpg" alt="${ord(n)}のモンチ">
+        <div>
+          <span class="no">No.${pad(n)}</span>
+          <h3>${ord(n)}のモンチ</h3>
+          <div class="row"><span class="label">🏠 お迎え日</span>${esc(fmtDate(m.date))}</div>
+          <div class="row"><span class="label">🛍️ 購入したお店</span>${esc(m.shop || '-')}</div>
+          <div class="memo">📝 メモ: ${esc(m.memo || '')}</div>
+        </div>
+      </div>`;
+      const done = () => alert(`コピーしました！index.htmlの＋カードのすぐ上に貼り付けて、\n写真は monchi${n}.jpg という名前で index.html と同じ場所にアップしてください。\nそのあと、ここのカードは削除してOKです。`);
+      if (navigator.clipboard) navigator.clipboard.writeText(code).then(done, () => prompt('下のコードをコピーしてください', code));
+      else prompt('下のコードをコピーしてください', code);
+    }
+
+    render();
+
+    // ============ 위시리스트 (적기 / 데려옴 체크 / 지우기) ============
+    const WKEY = 'monchizukan-jp-wish-v1';
+    const loadWish = () => { try { return JSON.parse(localStorage.getItem(WKEY)) || []; } catch (e) { return []; } };
+    const saveWish = list => { try { localStorage.setItem(WKEY, JSON.stringify(list)); } catch (e) {} };
+
+    function renderWish() {
+      const list = loadWish();
+      const ul = $('wishList');
+      ul.innerHTML = '';
+      $('wishEmpty').hidden = list.length > 0;
+      list.forEach((w, i) => {
+        const li = document.createElement('li');
+        if (w.got) li.className = 'got';
+        li.innerHTML = `<span class="name">${esc(w.name)}</span>
+          <button type="button" class="tag">${w.got ? 'お迎え済み!' : 'ほしい'}</button>
+          <button type="button" class="del" aria-label="削除">×</button>`;
+        // 태그를 누르면 'ほしい' ↔ 'お迎え済み!' 바뀜
+        li.querySelector('.tag').onclick = () => { list[i].got = !list[i].got; saveWish(list); renderWish(); };
+        li.querySelector('.del').onclick = () => {
+          if (!confirm(`「${w.name}」をリストから削除しますか？`)) return;
+          list.splice(i, 1); saveWish(list); renderWish();
+        };
+        ul.appendChild(li);
+      });
+    }
+
+    $('wishForm').onsubmit = e => {
+      e.preventDefault();
+      const name = $('wishInput').value.trim();
+      if (!name) { $('wishInput').focus(); return; }
+      const list = loadWish(); list.push({ name, got: false });
+      saveWish(list); $('wishInput').value = ''; renderWish();
+    };
+
+    renderWish();
+  </script>
+
+</body>
+</html>
